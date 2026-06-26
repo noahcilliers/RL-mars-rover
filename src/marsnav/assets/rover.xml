@@ -1,0 +1,100 @@
+<mujoco model="marsnav_rover">
+  <!-- v1 navigation rover: 4-wheel skid-steer on a heightfield, Mars gravity.
+       Terrain is a single fixed-resolution hfield slot whose data is overwritten
+       in place at episode reset (no recompile). Phase 0 keeps it flat (zeros). -->
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <option timestep="0.005" gravity="0 0 -3.71" integrator="implicitfast"/>
+
+  <statistic center="0 0 0.2" extent="2.5"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.35 0.35 0.35" specular="0 0 0"/>
+    <rgba haze="0.6 0.45 0.35 1"/>
+    <global azimuth="120" elevation="-20" offwidth="1280" offheight="960"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.75 0.55 0.42" rgb2="0.18 0.13 0.1"
+             width="512" height="512"/>
+    <texture name="terrain_tex" type="2d" builtin="checker" rgb1="0.56 0.36 0.26"
+             rgb2="0.46 0.29 0.21" width="300" height="300"/>
+    <material name="terrain_mat" texture="terrain_tex" texrepeat="24 24" texuniform="true"
+              reflectance="0.0"/>
+    <material name="chassis_mat" rgba="0.82 0.82 0.86 1"/>
+    <material name="wheel_mat" rgba="0.13 0.13 0.13 1"/>
+
+    <!-- 60 m x 60 m arena. size = (radius_x, radius_y, max_elevation, base_thickness).
+         Data defaults to zeros => flat surface at z = 0. -->
+    <hfield name="terrain" nrow="128" ncol="128" size="30 30 5 1"/>
+  </asset>
+
+  <default>
+    <default class="wheel">
+      <!-- sphere wheels: they collide cleanly with the heightfield, whereas
+           cylinders make jittery/asymmetric hfield contacts (large heading
+           drift). v1 abstracts control to [v, yaw], so wheel shape is a
+           contact detail, not a fidelity claim. -->
+      <geom type="sphere" size="0.12" material="wheel_mat"
+            friction="1.0 0.005 0.0001" condim="3" density="300"/>
+      <joint type="hinge" axis="0 1 0" damping="0.05"/>
+    </default>
+  </default>
+
+  <worldbody>
+    <light name="sun" pos="0 0 30" dir="0 0 -1" directional="true" diffuse="0.8 0.8 0.8"/>
+
+    <geom name="terrain" type="hfield" hfield="terrain" material="terrain_mat" pos="0 0 0"/>
+
+    <!-- visual-only goal marker; the env moves it via data.mocap_pos -->
+    <body name="goal" mocap="true" pos="5 0 0.4">
+      <geom name="goal_marker" type="sphere" size="0.35" rgba="0.2 0.9 0.35 0.45"
+            contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="chassis" pos="0 0 0.20">
+      <freejoint name="root"/>
+      <site name="imu" pos="0 0 0" size="0.02"/>
+      <camera name="chase" pos="-2.5 0 1.4" xyaxes="0 -1 0 0.5 0 1"/>
+      <geom name="chassis" type="box" size="0.30 0.20 0.08" material="chassis_mat" density="300"/>
+
+      <body name="wheel_fl" pos="0.20 0.28 -0.08">
+        <joint name="wheel_fl" class="wheel"/>
+        <geom class="wheel"/>
+      </body>
+      <body name="wheel_fr" pos="0.20 -0.28 -0.08">
+        <joint name="wheel_fr" class="wheel"/>
+        <geom class="wheel"/>
+      </body>
+      <body name="wheel_rl" pos="-0.20 0.28 -0.08">
+        <joint name="wheel_rl" class="wheel"/>
+        <geom class="wheel"/>
+      </body>
+      <body name="wheel_rr" pos="-0.20 -0.28 -0.08">
+        <joint name="wheel_rr" class="wheel"/>
+        <geom class="wheel"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- velocity (P-on-velocity) actuators; control is wheel angular velocity (rad/s) -->
+    <velocity name="wheel_fl" joint="wheel_fl" kv="30" ctrlrange="-20 20"/>
+    <velocity name="wheel_fr" joint="wheel_fr" kv="30" ctrlrange="-20 20"/>
+    <velocity name="wheel_rl" joint="wheel_rl" kv="30" ctrlrange="-20 20"/>
+    <velocity name="wheel_rr" joint="wheel_rr" kv="30" ctrlrange="-20 20"/>
+  </actuator>
+
+  <sensor>
+    <framequat   name="chassis_quat"  objtype="site" objname="imu"/>
+    <framezaxis  name="chassis_up"    objtype="site" objname="imu"/>
+    <framepos    name="chassis_pos"   objtype="site" objname="imu"/>
+    <gyro        name="chassis_gyro"  site="imu"/>
+    <velocimeter name="chassis_vel"   site="imu"/>
+    <jointvel    name="wheel_fl_vel"  joint="wheel_fl"/>
+    <jointvel    name="wheel_fr_vel"  joint="wheel_fr"/>
+    <jointvel    name="wheel_rl_vel"  joint="wheel_rl"/>
+    <jointvel    name="wheel_rr_vel"  joint="wheel_rr"/>
+  </sensor>
+</mujoco>

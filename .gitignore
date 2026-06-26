@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# venv / uv
+.venv/
+
+# Logs, runs, checkpoints
+runs/
+logs/
+tb/
+*.zip
+wandb/
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Large third-party reference PDFs (kept local, not redistributed in a public repo)
+research-docs/*.pdf

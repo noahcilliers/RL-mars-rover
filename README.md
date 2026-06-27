@@ -46,6 +46,7 @@ uv run python scripts/manual_drive.py    # sanity-check skid-steer control
 uv run python scripts/random_rollout.py  # instrumented random-policy rollout
 uv run tensorboard --logdir runs/random-rollout
 uv run python scripts/train_ppo_flat.py  # Phase 1 PPO training on flat ground
+uv run mjpython scripts/watch_ppo_flat.py  # watch the newest trained PPO policy
 uv run tensorboard --logdir runs/ppo-flat
 uv run pytest                            # env sanity checks
 ```

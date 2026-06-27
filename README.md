@@ -44,5 +44,6 @@ tests/         env sanity checks
 uv run python scripts/view_rover.py      # inspect the rover in the MuJoCo viewer
 uv run python scripts/manual_drive.py    # sanity-check skid-steer control
 uv run python scripts/random_rollout.py  # instrumented random-policy rollout
+uv run tensorboard --logdir runs/random-rollout
 uv run pytest                            # env sanity checks
 ```

@@ -6,14 +6,14 @@ benchmarked against a strong **traversability- and safety-aware classical
 planner** that is handed the **full** terrain map. The headline metric is
 **assurance cost per decision and exploration throughput** — not path length.
 
-See the numbered design docs at the repo root (`00`–`06`) for the full framing,
-thesis, and phased plan, and `research-docs/` for the literature review.
+See the numbered design docs in `docs/` for the full framing, thesis, and
+phased plan, and `research-docs/` for the literature review.
 
 ## Status
 
-**Phase 0 — walking skeleton.** Toolchain, repo scaffold, rover MJCF, a custom
-Gymnasium env, and an instrumented random-policy rollout across vectorized envs.
-No learning yet; the goal is a trustworthy, instrumented loop.
+**Phase 1 — flat-ground PPO.** Toolchain, repo scaffold, rover MJCF, a custom
+Gymnasium env, instrumented random-policy rollout, and an SB3 PPO training entry
+point for flat-ground goal reaching.
 
 ## Setup
 
@@ -38,12 +38,14 @@ scripts/       runnable entry points (viewer, manual drive, rollout)
 tests/         env sanity checks
 ```
 
-## Commands (Phase 0)
+## Commands
 
 ```bash
 uv run python scripts/view_rover.py      # inspect the rover in the MuJoCo viewer
 uv run python scripts/manual_drive.py    # sanity-check skid-steer control
 uv run python scripts/random_rollout.py  # instrumented random-policy rollout
 uv run tensorboard --logdir runs/random-rollout
+uv run python scripts/train_ppo_flat.py  # Phase 1 PPO training on flat ground
+uv run tensorboard --logdir runs/ppo-flat
 uv run pytest                            # env sanity checks
 ```

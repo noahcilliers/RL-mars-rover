@@ -49,6 +49,24 @@ def test_episode_terminates_or_truncates():
     assert steps <= env.max_steps + 1  # never runs past the time limit
 
 
+def test_terminal_info_reports_success_flag_for_success_and_timeout():
+    success_env = RoverNavEnv(success_radius=100.0)
+    success_env.reset(seed=4)
+    _, _, terminated, truncated, info = success_env.step(np.array([0.0, 0.0], dtype=np.float32))
+    assert terminated and not truncated
+    assert info["is_success"] is True
+    assert info["rollover"] is False
+    assert info["out_of_bounds"] is False
+
+    timeout_env = RoverNavEnv(max_episode_seconds=0.05, success_radius=0.0)
+    timeout_env.reset(seed=5)
+    _, _, terminated, truncated, info = timeout_env.step(np.array([0.0, 0.0], dtype=np.float32))
+    assert not terminated and truncated
+    assert info["is_success"] is False
+    assert info["rollover"] is False
+    assert info["out_of_bounds"] is False
+
+
 def test_progress_reward_sign():
     """Driving straight at a goal dead ahead should yield positive reward."""
     env = RoverNavEnv(goal_distance=(10.0, 10.0))

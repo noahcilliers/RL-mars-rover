@@ -158,7 +158,11 @@ class RoverNavEnv(gym.Env):
         self._prev_dist = dist
         terminated = False
         truncated = False
-        info: dict = {}
+        info: dict = {
+            "is_success": False,
+            "rollover": False,
+            "out_of_bounds": False,
+        }
 
         if dist < self.success_radius:
             reward += self.success_bonus
